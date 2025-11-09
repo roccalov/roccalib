@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛卡洛夫图书馆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #2575fc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #1a5fd8;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .articles-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border-left: 4px solid #2575fc;
+        }
+        
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .article-content {
+            padding: 20px;
+        }
+        
+        .article-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .article-preview {
+            color: #666;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .article-full {
+            line-height: 1.8;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            grid-column: 1 / -1;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            color: #777;
+            border-top: 1px solid #eee;
+        }
+        
+        .storage-info {
+            background: #e7f3ff;
+            border-left: 4px solid #2575fc;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .storage-info h3 {
+            margin-top: 0;
+            color: #2575fc;
+        }
+        
+        .storage-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .article-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .toolbar-group label {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+        
+        select, .toolbar-btn {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+        
+        .toolbar-btn.active {
+            background: #e9ecef;
+            border-color: #2575fc;
+        }
+        
+        .editor-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #article-content {
+            min-height: 300px;
+            padding: 15px;
+            outline: none;
+            overflow-y: auto;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        #article-content:focus {
+            border-color: #2575fc;
+        }
+        
+        @media (max-width: 768px) {
+            .articles-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+            
+            .storage-actions {
+                flex-direction: column;
+            }
+            
+            .editor-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .toolbar-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>洛卡洛夫图书馆</h1>
+            <p class="tagline">自行选择你的书写方式</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section class="upload-section">
+            <h2>添加新文章</h2>
+            
+            <div class="storage-info">
+                <h3>存储管理</h3>
+                <p>当前已使用存储: <span id="storage-used">0 KB</span></p>
+                <p>文章数量: <span id="article-count">0</span></p>
+                <div class="storage-actions">
+                    <button class="btn btn-danger" id="clear-all-btn">清空所有文章</button>
+                    <button class="btn btn-success" id="export-btn">导出文章数据</button>
+                </div>
+            </div>
+            
+            <form id="article-form">
+                <div class="form-group">
+                    <label for="article-title">文章标题 *</label>
+                    <input type="text" id="article-title" placeholder="输入文章标题" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>文章内容 *</label>
+                    <div class="editor-toolbar" id="editor-toolbar">
+                        <div class="toolbar-group">
+                            <label>字体:</label>
+                            <select id="font-family">
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                                <option value="'Georgia', serif">Georgia</option>
+                                <option value="'Verdana', sans-serif">Verdana</option>
+                                <option value="'微软雅黑', 'Microsoft YaHei', sans-serif">微软雅黑</option>
+                                <option value="'宋体', SimSun, serif">宋体</option>
+                                <option value="'黑体', SimHei, sans-serif">黑体</option>
+                            </select>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <label>大小:</label>
+                            <select id="font-size">
+                                <option value="1">很小</option>
+                                <option value="2">小</option>
+                                <option value="3" selected>正常</option>
+                                <option value="4">中</option>
+                                <option value="5">大</option>
+                                <option value="6">很大</option>
+                                <option value="7">最大</option>
+                            </select>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-btn" id="bold-btn" title="粗体">
+                                <strong>B</strong>
+                            </button>
+                            <button type="button" class="toolbar-btn" id="italic-btn" title="斜体">
+                                <em>I</em>
+                            </button>
+                            <button type="button" class="toolbar-btn" id="underline-btn" title="下划线">
+                                <u>U</u>
+                            </button>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-btn" id="align-left-btn" title="左对齐">
+                                ≡
+                            </button>
+                            <button type="button" class="toolbar-btn" id="align-center-btn" title="居中对齐">
+                                ≡
+                            </button>
+                            <button type="button" class="toolbar-btn" id="align-right-btn" title="右对齐">
+                                ≡
+                            </button>
+                            <button type="button" class="toolbar-btn" id="align-justify-btn" title="两端对齐">
+                                ≡
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-container">
+                        <div id="article-content" contenteditable="true" placeholder="请输入文章内容..."></div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" id="submit-btn">保存文章</button>
+            </form>
+        </section>
+        
+        <section class="articles-section" id="articles-container">
+            <!-- 文章卡片将通过JavaScript动态生成 -->
+            <div class="empty-state" id="empty-state">
+                <h3>暂无文章</h3>
+                <p>使用上方的表单添加您的第一篇文章</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 文章详情模态框 -->
+    <div class="modal" id="article-modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-modal">&times;</span>
+            <div id="modal-body">
+                <!-- 文章详情将通过JavaScript动态填充 -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 文章管理系统 - 简化版. 保留所有权利.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 文章数据（使用浏览器本地存储）
+        let articles = JSON.parse(localStorage.getItem('articles')) || [];
+        
+        // DOM元素
+        const articleForm = document.getElementById('article-form');
+        const articlesContainer = document.getElementById('articles-container');
+        const emptyState = document.getElementById('empty-state');
+        const articleModal = document.getElementById('article-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalBody = document.getElementById('modal-body');
+        const submitBtn = document.getElementById('submit-btn');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const storageUsed = document.getElementById('storage-used');
+        const articleCount = document.getElementById('article-count');
+        
+        // 编辑器相关元素
+        const editorContent = document.getElementById('article-content');
+        const fontFamilySelect = document.getElementById('font-family');
+        const fontSizeSelect = document.getElementById('font-size');
+        const boldBtn = document.getElementById('bold-btn');
+        const italicBtn = document.getElementById('italic-btn');
+        const underlineBtn = document.getElementById('underline-btn');
+        const alignLeftBtn = document.getElementById('align-left-btn');
+        const alignCenterBtn = document.getElementById('align-center-btn');
+        const alignRightBtn = document.getElementById('align-right-btn');
+        const alignJustifyBtn = document.getElementById('align-justify-btn');
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 清空所有文章按钮
+            clearAllBtn.addEventListener('click', () => {
+                if (articles.length === 0) {
+                    alert('当前没有文章可清空');
+                    return;
+                }
+                
+                if (confirm('确定要清空所有文章吗？此操作不可撤销！')) {
+                    articles = [];
+                    localStorage.setItem('articles', JSON.stringify(articles));
+                    renderArticles();
+                    updateStorageInfo();
+                    alert('所有文章已清空');
+                }
+            });
+            
+            // 导出文章数据按钮
+            exportBtn.addEventListener('click', () => {
+                if (articles.length === 0) {
+                    alert('当前没有文章可导出');
+                    return;
+                }
+                
+                const dataStr = JSON.stringify(articles, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'articles_backup.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                alert('文章数据已导出为JSON文件');
+            });
+            
+            // 编辑器工具栏事件
+            fontFamilySelect.addEventListener('change', () => {
+                document.execCommand('fontName', false, fontFamilySelect.value);
+                editorContent.focus();
+            });
+            
+            fontSizeSelect.addEventListener('change', () => {
+                document.execCommand('fontSize', false, fontSizeSelect.value);
+                editorContent.focus();
+            });
+            
+            boldBtn.addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            italicBtn.addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            underlineBtn.addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            alignLeftBtn.addEventListener('click', () => {
+                document.execCommand('justifyLeft', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            alignCenterBtn.addEventListener('click', () => {
+                document.execCommand('justifyCenter', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            alignRightBtn.addEventListener('click', () => {
+                document.execCommand('justifyRight', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            alignJustifyBtn.addEventListener('click', () => {
+                document.execCommand('justifyFull', false, null);
+                editorContent.focus();
+                updateToolbarButtons();
+            });
+            
+            // 编辑器选择变化时更新工具栏按钮状态
+            editorContent.addEventListener('click', updateToolbarButtons);
+            editorContent.addEventListener('keyup', updateToolbarButtons);
+        }
+        
+        // 更新工具栏按钮状态
+        function updateToolbarButtons() {
+            // 检查粗体状态
+            boldBtn.classList.toggle('active', document.queryCommandState('bold'));
+            
+            // 检查斜体状态
+            italicBtn.classList.toggle('active', document.queryCommandState('italic'));
+            
+            // 检查下划线状态
+            underlineBtn.classList.toggle('active', document.queryCommandState('underline'));
+            
+            // 检查对齐状态
+            alignLeftBtn.classList.toggle('active', document.queryCommandState('justifyLeft'));
+            alignCenterBtn.classList.toggle('active', document.queryCommandState('justifyCenter'));
+            alignRightBtn.classList.toggle('active', document.queryCommandState('justifyRight'));
+            alignJustifyBtn.classList.toggle('active', document.queryCommandState('justifyFull'));
+        }
+        
+        // 更新存储信息
+        function updateStorageInfo() {
+            // 计算存储使用量
+            const dataStr = JSON.stringify(articles);
+            const storageSize = new Blob([dataStr]).size;
+            storageUsed.textContent = (storageSize / 1024).toFixed(2) + ' KB';
+            
+            // 更新文章数量
+            articleCount.textContent = articles.length;
+        }
+        
+        // 渲染文章列表
+        function renderArticles() {
+            if (articles.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            articlesContainer.innerHTML = '';
+            
+            articles.forEach((article, index) => {
+                const articleCard = document.createElement('div');
+                articleCard.className = 'article-card';
+                articleCard.innerHTML = `
+                    <div class="article-content">
+                        <h3 class="article-title">${article.title}</h3>
+                        <p class="article-preview">${article.preview}</p>
+                        <div class="article-meta">
+                            <span>${article.date}</span>
+                            <span>${article.tags}</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="btn btn-danger delete-btn" data-index="${index}">删除</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 点击文章卡片查看详情
+                articleCard.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-btn')) {
+                        openArticleModal(index);
+                    }
+                });
+                
+                // 删除按钮事件
+                const deleteBtn = articleCard.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteArticle(index);
+                });
+                
+                articlesContainer.appendChild(articleCard);
+            });
+        }
+        
+        // 打开文章详情模态框
+        function openArticleModal(index) {
+            const article = articles[index];
+            modalBody.innerHTML = `
+                <h2>${article.title}</h2>
+                <p class="article-meta">${article.date} | 标签: ${article.tags}</p>
+                <div class="article-full">${article.content}</div>
+            `;
+            articleModal.style.display = 'block';
+        }
+        
+        // 删除文章
+        function deleteArticle(index) {
+            if (confirm('确定要删除这篇文章吗？')) {
+                articles.splice(index, 1);
+                localStorage.setItem('articles', JSON.stringify(articles));
+                renderArticles();
+                updateStorageInfo();
+                alert('文章已删除');
+            }
+        }
+        
+        // 关闭模态框
+        closeModal.addEventListener('click', () => {
+            articleModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === articleModal) {
+                articleModal.style.display = 'none';
+            }
+        });
+        
+        // 处理表单提交
+        articleForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('article-title').value.trim();
+            const content = editorContent.innerHTML;
+            
+            // 验证输入
+            if (!title) {
+                alert('请输入文章标题');
+                document.getElementById('article-title').focus();
+                return;
+            }
+            
+            if (!content || content === '<br>' || content === '<div><br></div>') {
+                alert('请输入文章内容');
+                editorContent.focus();
+                return;
+            }
+            
+            saveArticle(title, content);
+        });
+        
+        // 保存文章到本地存储
+        function saveArticle(title, content) {
+            try {
+                // 生成预览文本 - 从HTML中提取纯文本
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = content;
+                const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                const previewText = plainText.substring(0, 100) + (plainText.length > 100 ? '...' : '');
+                
+                const newArticle = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    preview: previewText,
+                    tags: '未分类',
+                    date: new Date().toLocaleDateString('zh-CN')
+                };
+                
+                articles.unshift(newArticle);
+                
+                // 尝试保存到localStorage
+                try {
+                    localStorage.setItem('articles', JSON.stringify(articles));
+                } catch (storageError) {
+                    console.error('本地存储错误:', storageError);
+                    
+                    // 如果存储空间不足，删除最旧的文章
+                    if (storageError.message.includes('quota') || storageError.name === 'QuotaExceededError') {
+                        alert('存储空间不足，将删除最旧的文章以释放空间');
+                        articles.pop(); // 删除最旧的文章
+                        localStorage.setItem('articles', JSON.stringify(articles));
+                    } else {
+                        alert('保存失败: ' + storageError.message);
+                        return;
+                    }
+                }
+                
+                renderArticles();
+                resetForm();
+                updateStorageInfo();
+                
+                // 显示成功提示
+                alert('文章已成功添加！');
+                
+            } catch (error) {
+                console.error('保存文章时出错:', error);
+                alert('保存文章时出错: ' + error.message);
+            }
+        }
+        
+        // 重置表单
+        function resetForm() {
+            document.getElementById('article-title').value = '';
+            editorContent.innerHTML = '';
+            
+            // 重置工具栏状态
+            fontFamilySelect.value = 'Arial, sans-serif';
+            fontSizeSelect.value = '3';
+            updateToolbarButtons();
+        }
+        
+        // 检查本地存储支持
+        function checkLocalStorageSupport() {
+            try {
+                const test = 'test';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
+        
+        // 初始化页面
+        function initPage() {
+            // 检查本地存储支持
+            if (!checkLocalStorageSupport()) {
+                alert('您的浏览器不支持本地存储功能，文章将无法保存。请使用现代浏览器如Chrome、Firefox或Edge。');
+                return;
+            }
+            
+            initEventListeners();
+            renderArticles();
+            updateStorageInfo();
+            
+            // 设置编辑器占位符
+            editorContent.setAttribute('placeholder', '请输入文章内容...');
+        }
+        
+        // 启动初始化
+        initPage();
+    </script>
+</body>
+</html>
